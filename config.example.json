@@ -1,0 +1,14 @@
+{
+    "camels": [{
+        "username": "CamelUser1",
+        "password": "CamelPassword1",
+        "min": 15,
+        "max": 30
+    }, {
+        "username": "CamelUser1",
+        "password": "CamelPassword1",
+        "min": 80,
+        "max": 88
+    }],
+    "debug": 1
+}
