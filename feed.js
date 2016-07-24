@@ -16,10 +16,11 @@ function feedCamel() {
         var feedPromise = new Promise(function(resolve, reject) {
           communication.setCamel(camelInstance);
           communication.auth()
-          .then(() => { return communication.feed() }, reject)
-          .then(() => { return communication.teach() }, reject)
-          .then(() => { return communication.lotto() }, reject)
-          .then(resolve, reject);
+          .then(() => { return communication.feed() })
+          .then(() => { return communication.teach() })
+          .then(() => { return communication.lotto() })
+          .then(resolve)
+          .catch(reject);
         });
 
         feedPromise.then(feedCamel, (error = 'Unknown error.') => {console.log(error)});
