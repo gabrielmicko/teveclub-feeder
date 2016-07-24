@@ -10,7 +10,7 @@ This application can feed, teach and play with your camel on behalf of you on co
 
 ### Configuration
 
-You can set your camel login details in the **config.js.** Please check out example.config.json for more details. You can set a range of numbers which  is needed for the lottery game. A random number will be picked from the range. You can debug the app, html, http requests and the results by setting the the debug mode on.
+You can set your camel login details in the **config.js.** Please check out example.config.json for more details. You can set a range of numbers which  is needed for the lottery game. A random number is being picked from the range. You can debug the app, html, http requests and the results by setting the the debug mode on.
 ```js
 {
     "camels": [
@@ -34,4 +34,4 @@ npm start
 1.0.0
 
 ### Cron job
-I suggest you to run the app once a day from by setting up a cron job.
+I suggest you to run the app once a day by setting up a cron job.
