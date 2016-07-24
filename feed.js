@@ -5,27 +5,28 @@ import Communication from './lib/communication';
 
 nConf.argv().env().file({ file: 'config.json' });
 
-let camels = nConf.get('camels').slice(0);
+const camels = nConf.get('camels').slice(0);
 
 function feedCamel() {
-  let camel = camels.pop();
+    if(camels.length > 0) {
+        let camel = camels.pop();
 
-  let camelInstance = new Camel(camel);
-  let communication = new Communication();
-  var feedPromise = new Promise(function(resolve, reject) {
-    communication.setCamel(camelInstance);
-    communication.auth()
-    .then(() => { communication.feed() }, reject)
-    .then(() => { communication.teach() }, reject)
-    .then(() => { communication.lotto() }, reject)
-    .then(resolve, reject);
-  });
+        let camelInstance = new Camel(camel);
+        let communication = new Communication();
+        var feedPromise = new Promise(function(resolve, reject) {
+          communication.setCamel(camelInstance);
+          communication.auth()
+          .then(() => { return communication.feed() }, reject)
+          .then(() => { return communication.teach() }, reject)
+          .then(() => { return communication.lotto() }, reject)
+          .then(resolve, reject);
+        });
 
-  feedPromise.then(feedCamel, (error) => {console.log(error)});
+        feedPromise.then(feedCamel, (error) => {console.log(error)});
+    }
+    else {
+        process.exit();
+    }
 }
 
 feedCamel();
-
-setTimeout(function() {
-
-},555000);
