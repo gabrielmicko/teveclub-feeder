@@ -22,7 +22,7 @@ function feedCamel() {
           .then(resolve, reject);
         });
 
-        feedPromise.then(feedCamel, (error) => {console.log(error)});
+        feedPromise.then(feedCamel, (error = 'Unknown error.') => {console.log(error)});
     }
     else {
         process.exit();
