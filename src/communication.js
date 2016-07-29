@@ -3,6 +3,7 @@ import fs from 'fs';
 import nConf from 'nconf';
 import jsdom from 'jsdom';
 import RequestBuilder from './request';
+import path from 'path';
 
 nConf.argv().env().file({
     file: 'config.json'
@@ -10,6 +11,10 @@ nConf.argv().env().file({
 
 if (nConf.get('debug')) {
     //request.debug = true;
+    let debugPath = path.join(__dirname, '../debug')
+    if(fs.existsSync(debugPath) === false) {
+      fs.mkdirSync(debugPath);
+    }
 }
 
 class Communication {
@@ -39,7 +44,8 @@ class Communication {
                 if (err) reject('Auth() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('../debug/auth.html', body);
+                    let filePath = path.join(__dirname, '../debug/auth.html')
+                    fs.writeFileSync(filePath, body);
                 }
 
                 if (httpResponse.statusCode == 200 && httpResponse.request.uri.pathname == '/myteve.pet') {
@@ -80,7 +86,8 @@ class Communication {
                     if (err) reject('Feed() request error.');
 
                     if (nConf.get('debug')) {
-                        fs.writeFileSync('../debug/food.html', body);
+                        let filePath = path.join(__dirname, '../debug/food.html');
+                        fs.writeFileSync(filePath, body);
                         console.log('The camel got ' + this.drink + ' amount of drink & ' + this.food + ' amount of food.');
                     }
                     resolve();
@@ -109,7 +116,8 @@ class Communication {
                 if (err) reject('Teach() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('../debug/teach.html', body);
+                    let filePath = path.join(__dirname, '../debug/teach.html');
+                    fs.writeFileSync(filePath, body);
                 }
 
                 let document = jsdom.jsdom(body);
@@ -144,7 +152,8 @@ class Communication {
                 if (err) reject('pickSubject() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('../debug/subject.html', body);
+                    let filePath = path.join(__dirname, '../debug/subject.html');
+                    fs.writeFileSync(filePath, body);
                     console.log('New subject (' + subject + ') has been picked to learn.');
                 }
                 resolve();
@@ -169,7 +178,8 @@ class Communication {
                 if (err) reject('lotto() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('../debug/lotto.html', body);
+                    let filePath = path.join(__dirname, '../debug/lotto.html');
+                    fs.writeFileSync(filePath, body);
                     console.log('Random number generated (' + number + ') for the lotto.');
                 }
                 resolve();
