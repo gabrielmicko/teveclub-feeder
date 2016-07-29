@@ -1,5 +1,4 @@
 import nConf from 'nconf';
-import httpPost from 'http-post';
 import Camel from './lib/camel';
 import Communication from './lib/communication';
 
