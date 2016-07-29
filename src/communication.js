@@ -11,7 +11,7 @@ nConf.argv().env().file({
 
 if (nConf.get('debug')) {
     //request.debug = true;
-    let debugPath = path.join(__dirname, '../debug')
+    let debugPath = path.join(__dirname, '../debug');
     if(fs.existsSync(debugPath) === false) {
       fs.mkdirSync(debugPath);
     }

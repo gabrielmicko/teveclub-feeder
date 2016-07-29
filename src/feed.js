@@ -1,6 +1,7 @@
 import nConf from 'nconf';
 import Camel from './camel';
 import Communication from './communication';
+import path from 'path';
 
 let configPath = path.join(__dirname, '../config.json');
 nConf.argv().env().file({ file: configPath });
