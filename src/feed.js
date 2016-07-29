@@ -2,7 +2,8 @@ import nConf from 'nconf';
 import Camel from './camel';
 import Communication from './communication';
 
-nConf.argv().env().file({ file: 'config.json' });
+let configPath = path.join(__dirname, '../config.json');
+nConf.argv().env().file({ file: configPath });
 
 const camels = nConf.get('camels').slice(0);
 
