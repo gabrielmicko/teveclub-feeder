@@ -39,7 +39,7 @@ class Communication {
                 if (err) reject('Auth() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('./debug/auth.html', body);
+                    fs.writeFileSync('../debug/auth.html', body);
                 }
 
                 if (httpResponse.statusCode == 200 && httpResponse.request.uri.pathname == '/myteve.pet') {
@@ -80,7 +80,7 @@ class Communication {
                     if (err) reject('Feed() request error.');
 
                     if (nConf.get('debug')) {
-                        fs.writeFileSync('./debug/food.html', body);
+                        fs.writeFileSync('../debug/food.html', body);
                         console.log('The camel got ' + this.drink + ' amount of drink & ' + this.food + ' amount of food.');
                     }
                     resolve();
@@ -109,7 +109,7 @@ class Communication {
                 if (err) reject('Teach() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('./debug/teach.html', body);
+                    fs.writeFileSync('../debug/teach.html', body);
                 }
 
                 let document = jsdom.jsdom(body);
@@ -144,7 +144,7 @@ class Communication {
                 if (err) reject('pickSubject() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('./debug/subject.html', body);
+                    fs.writeFileSync('../debug/subject.html', body);
                     console.log('New subject (' + subject + ') has been picked to learn.');
                 }
                 resolve();
@@ -169,7 +169,7 @@ class Communication {
                 if (err) reject('lotto() request error.');
 
                 if (nConf.get('debug')) {
-                    fs.writeFileSync('./debug/lotto.html', body);
+                    fs.writeFileSync('../debug/lotto.html', body);
                     console.log('Random number generated (' + number + ') for the lotto.');
                 }
                 resolve();
