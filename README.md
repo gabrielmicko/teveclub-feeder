@@ -27,7 +27,13 @@ You can set your camel login details in the **config.json.** Please check out ex
 ### Running the application
 ```sh
 npm install
+npm run build
 npm start
+```
+
+### For instant compiling
+```sh
+npm run dev
 ```
 
 ### Version

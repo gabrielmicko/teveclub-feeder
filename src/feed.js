@@ -1,6 +1,6 @@
 import nConf from 'nconf';
-import Camel from './lib/camel';
-import Communication from './lib/communication';
+import Camel from './camel';
+import Communication from './communication';
 
 nConf.argv().env().file({ file: 'config.json' });
 
