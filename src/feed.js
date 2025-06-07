@@ -27,14 +27,19 @@ async function feedCamel() {
 
   try {
     communication.setCamel(camelInstance);
+    console.log('Before getSession');
     await communication.getSession();
     await sleep();
+    console.log('Before auth');
     await communication.auth();
     await sleep();
+    console.log('Before feed');
     await communication.feed();
     await sleep();
+    console.log('Before teach');
     await communication.teach();
     await sleep();
+    console.log('Before lotto');
     await communication.lotto();
     await sleep();
   } catch (error) {
