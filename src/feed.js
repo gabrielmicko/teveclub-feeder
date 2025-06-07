@@ -1,7 +1,11 @@
 import nConf from 'nconf';
-import Camel from './camel';
-import Communication from './communication';
+import Camel from './camel.js';
+import Communication from './communication.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let configPath = path.join(__dirname, '../config.json');
 nConf.argv().env().file({ file: configPath });

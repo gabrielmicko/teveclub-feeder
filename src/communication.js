@@ -2,8 +2,12 @@ import request from 'request';
 import fs from 'fs';
 import nConf from 'nconf';
 import jsdom from 'jsdom';
-import RequestBuilder from './request';
+import RequestBuilder from './request.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 nConf.argv().env().file({
   file: 'config.json',

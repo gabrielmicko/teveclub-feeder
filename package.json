@@ -4,10 +4,9 @@
   "description": "Teveclub.hu camel keeper.",
   "main": "feed.js",
   "scripts": {
-    "start": "node lib/feed.js",
-    "build": "babel src -d lib",
-    "dev": "./node_modules/.bin/babel-node ./src/feed.js"
+    "start": "node src/feed.js"
   },
+  "type": "module",
   "keywords": [
     "teveclub",
     "camel",
@@ -28,6 +27,7 @@
     "fs": "0.0.2",
     "jsdom": "^9.4.1",
     "nconf": "^0.8.4",
-    "request": "^2.74.0"
+    "request": "^2.74.0",
+    "url": "^0.11.4"
   }
 }
