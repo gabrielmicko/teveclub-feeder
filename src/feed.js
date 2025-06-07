@@ -8,35 +8,27 @@ nConf.argv().env().file({ file: configPath });
 
 const camels = nConf.get('camels').slice(0);
 
-function feedCamel() {
-  if (camels.length > 0) {
-    let camel = camels.pop();
-
-    let camelInstance = new Camel(camel);
-    let communication = new Communication();
-    var feedPromise = new Promise(function(resolve, reject) {
-      communication.setCamel(camelInstance);
-      communication
-        .auth()
-        .then(() => {
-          return communication.feed();
-        })
-        .then(() => {
-          return communication.teach();
-        })
-        .then(() => {
-          return communication.lotto();
-        })
-        .then(resolve)
-        .catch(reject);
-    });
-
-    feedPromise.then(feedCamel, (error = 'Unknown error.') => {
-      console.log(error);
-    });
-  } else {
+async function feedCamel() {
+  if (camels.length === 0) {
     process.exit();
   }
+
+  const camel = camels.pop();
+  const camelInstance = new Camel(camel);
+  const communication = new Communication();
+
+  try {
+    communication.setCamel(camelInstance);
+    await communication.auth();
+    await communication.feed();
+    await communication.teach();
+    await communication.lotto();
+  } catch (error) {
+    console.error('Error while feeding camel:', error || 'Unknown error');
+  }
+
+  // Always call the next one regardless of success/failure
+  feedCamel();
 }
 
 feedCamel();

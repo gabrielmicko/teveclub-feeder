@@ -6,7 +6,7 @@ import RequestBuilder from './request';
 import path from 'path';
 
 nConf.argv().env().file({
-  file: 'config.json'
+  file: 'config.json',
 });
 
 if (nConf.get('debug')) {
@@ -32,50 +32,57 @@ class Communication {
     let options = {
       ...{
         url: 'https://teveclub.hu/index.pet',
+        timeout: 5000,
         jar: this.jar,
-        form: RequestBuilder.buildAuthData(this.camel)
+        form: RequestBuilder.buildAuthData(this.camel),
       },
-      ...RequestBuilder.getBaseRequest()
+      ...RequestBuilder.getBaseRequest(),
     };
 
     return new Promise(
-      function(resolve, reject) {
+      function (resolve, reject) {
         request.post(options, (err, httpResponse, body) => {
-          if (err) reject('Auth() request error.');
-
-          if (nConf.get('debug')) {
-            let filePath = path.join(__dirname, '../debug/auth.html');
-            fs.writeFileSync(filePath, body);
-          }
-
-          if (
-            httpResponse.statusCode == 200 &&
-            httpResponse.request.uri.pathname == '/myteve.pet'
-          ) {
-            let document = jsdom.jsdom(body);
-            let foodSelector = document.querySelector('select[name="kaja"]');
-            let drinkSelector = document.querySelector('select[name="pia"]');
-
-            this.food = foodSelector !== null
-              ? foodSelector.children.length
-              : 0;
-            this.drink = drinkSelector !== null
-              ? drinkSelector.children.length
-              : 0;
+          try {
+            if (err) {
+              console.log('Auth() request error.');
+              reject('Auth() request error.');
+            }
 
             if (nConf.get('debug')) {
-              console.log(
-                'Successfully logged in with the camel: ' + this.camel.username
-              );
+              let filePath = path.join(__dirname, '../debug/auth.html');
+              fs.writeFileSync(filePath, body);
             }
-            resolve();
-          } else {
-            if (nConf.get('debug')) {
-              console.log(
-                'Failed to log in with the camel: ' + this.camel.username
-              );
+
+            if (
+              httpResponse.statusCode == 200 &&
+              httpResponse.request.uri.pathname == '/myteve.pet'
+            ) {
+              let document = jsdom.jsdom(body);
+              let foodSelector = document.querySelector('select[name="kaja"]');
+              let drinkSelector = document.querySelector('select[name="pia"]');
+
+              this.food =
+                foodSelector !== null ? foodSelector.children.length : 0;
+              this.drink =
+                drinkSelector !== null ? drinkSelector.children.length : 0;
+
+              if (nConf.get('debug')) {
+                console.log(
+                  'Successfully logged in with the camel: ' +
+                    this.camel.username
+                );
+              }
+              resolve();
+            } else {
+              if (nConf.get('debug')) {
+                console.log(
+                  'Failed to log in with the camel: ' + this.camel.username
+                );
+              }
+              reject();
             }
-            reject();
+          } catch (error) {
+            console.log('Error in auth: ', error);
           }
         });
       }.bind(this)
@@ -84,32 +91,40 @@ class Communication {
 
   feed() {
     return new Promise(
-      function(resolve, reject) {
+      function (resolve, reject) {
         if (this.drink > 0 || this.food > 0) {
           let options = {
             ...{
               url: 'https://teveclub.hu/myteve.pet',
+              timeout: 5000,
               jar: this.jar,
-              form: RequestBuilder.buildFeedData(this.drink, this.food)
+              form: RequestBuilder.buildFeedData(this.drink, this.food),
             },
-            ...RequestBuilder.getBaseRequest()
+            ...RequestBuilder.getBaseRequest(),
           };
 
           request(options, (err, httpResponse, body) => {
-            if (err) reject('Feed() request error.');
+            try {
+              if (err) {
+                console.log('Feed() request error.');
+                reject('Feed() request error.');
+              }
 
-            if (nConf.get('debug')) {
-              let filePath = path.join(__dirname, '../debug/food.html');
-              fs.writeFileSync(filePath, body);
-              console.log(
-                'The camel got ' +
-                  this.drink +
-                  ' amount of drink & ' +
-                  this.food +
-                  ' amount of food.'
-              );
+              if (nConf.get('debug')) {
+                let filePath = path.join(__dirname, '../debug/food.html');
+                fs.writeFileSync(filePath, body);
+                console.log(
+                  'The camel got ' +
+                    this.drink +
+                    ' amount of drink & ' +
+                    this.food +
+                    ' amount of food.'
+                );
+              }
+              resolve();
+            } catch (error) {
+              console.log('Error in feed: ', error);
             }
-            resolve();
           });
         } else {
           if (nConf.get('debug')) {
@@ -126,33 +141,43 @@ class Communication {
       let options = {
         ...{
           url: 'https://teveclub.hu/tanit.pet',
+          timeout: 5000,
           jar: this.jar,
-          form: RequestBuilder.buildTeachData()
+          form: RequestBuilder.buildTeachData(),
         },
-        ...RequestBuilder.getBaseRequest()
+        ...RequestBuilder.getBaseRequest(),
       };
 
       request(
         options,
-        function(err, httpResponse, body) {
-          if (err) reject('Teach() request error.');
-
-          if (nConf.get('debug')) {
-            let filePath = path.join(__dirname, '../debug/teach.html');
-            fs.writeFileSync(filePath, body);
-          }
-
-          let document = jsdom.jsdom(body);
-          let teachSelector = document.querySelector('select[name="tudomany"]');
-
-          if (teachSelector !== null) {
-            let firstOption = teachSelector.children[0].value;
-            this.pickSubject(firstOption).then(resolve, reject);
-          } else {
-            if (nConf.get('debug')) {
-              console.log('Teaching the camel has been done.');
+        function (err, httpResponse, body) {
+          try {
+            if (err) {
+              console.log('Teach() request error.');
+              reject('Teach() request error.');
             }
-            resolve();
+
+            if (nConf.get('debug')) {
+              let filePath = path.join(__dirname, '../debug/teach.html');
+              fs.writeFileSync(filePath, body);
+            }
+
+            let document = jsdom.jsdom(body);
+            let teachSelector = document.querySelector(
+              'select[name="tudomany"]'
+            );
+
+            if (teachSelector !== null) {
+              let firstOption = teachSelector.children[0].value;
+              this.pickSubject(firstOption).then(resolve, reject);
+            } else {
+              if (nConf.get('debug')) {
+                console.log('Teaching the camel has been done.');
+              }
+              resolve();
+            }
+          } catch (error) {
+            console.log('Error in teach: ', error);
           }
         }.bind(this)
       );
@@ -161,27 +186,35 @@ class Communication {
 
   pickSubject(subject) {
     return new Promise(
-      function(resolve, reject) {
+      function (resolve, reject) {
         let options = {
           ...{
             url: 'https://teveclub.hu/tanit.pet',
+            timeout: 5000,
             jar: this.jar,
-            form: RequestBuilder.buildPickSubjectData(subject)
+            form: RequestBuilder.buildPickSubjectData(subject),
           },
-          ...RequestBuilder.getBaseRequest()
+          ...RequestBuilder.getBaseRequest(),
         };
 
         request(options, (err, httpResponse, body) => {
-          if (err) reject('pickSubject() request error.');
+          try {
+            if (err) {
+              console.log('pickSubject() request error.');
+              reject('pickSubject() request error.');
+            }
 
-          if (nConf.get('debug')) {
-            let filePath = path.join(__dirname, '../debug/subject.html');
-            fs.writeFileSync(filePath, body);
-            console.log(
-              'New subject (' + subject + ') has been picked to learn.'
-            );
+            if (nConf.get('debug')) {
+              let filePath = path.join(__dirname, '../debug/subject.html');
+              fs.writeFileSync(filePath, body);
+              console.log(
+                'New subject (' + subject + ') has been picked to learn.'
+              );
+            }
+            resolve();
+          } catch (error) {
+            console.log('Error in pickSubject: ', error);
           }
-          resolve();
         });
       }.bind(this)
     );
@@ -189,7 +222,7 @@ class Communication {
 
   lotto() {
     return new Promise(
-      function(resolve, reject) {
+      function (resolve, reject) {
         let number = Math.floor(
           Math.random() * (this.camel.max - this.camel.min) + this.camel.min
         );
@@ -197,23 +230,31 @@ class Communication {
         let options = {
           ...{
             url: 'https://teveclub.hu/egyszam.pet',
+            timeout: 5000,
             jar: this.jar,
-            form: RequestBuilder.buildLottoData(number)
+            form: RequestBuilder.buildLottoData(number),
           },
-          ...RequestBuilder.getBaseRequest()
+          ...RequestBuilder.getBaseRequest(),
         };
 
         request(options, (err, httpResponse, body) => {
-          if (err) reject('lotto() request error.');
+          try {
+            if (err) {
+              console.log('lotto() request error.');
+              reject('lotto() request error.');
+            }
 
-          if (nConf.get('debug')) {
-            let filePath = path.join(__dirname, '../debug/lotto.html');
-            fs.writeFileSync(filePath, body);
-            console.log(
-              'Random number generated (' + number + ') for the lotto.'
-            );
+            if (nConf.get('debug')) {
+              let filePath = path.join(__dirname, '../debug/lotto.html');
+              fs.writeFileSync(filePath, body);
+              console.log(
+                'Random number generated (' + number + ') for the lotto.'
+              );
+            }
+            resolve();
+          } catch (error) {
+            console.log('Error in lotto: ', error);
           }
-          resolve();
         });
       }.bind(this)
     );
