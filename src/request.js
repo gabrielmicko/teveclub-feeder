@@ -13,6 +13,15 @@ export default {
     };
   },
 
+  getHeaders() {
+    return {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:47.0) Gecko/20100101 Firefox/47.0',
+      Referer: 'https://teveclub.hu/',
+    };
+  },
+
   buildAuthData(Camel) {
     return encoder({
       tevenev: Camel.username,

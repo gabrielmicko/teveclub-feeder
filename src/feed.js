@@ -12,8 +12,8 @@ nConf.argv().env().file({ file: configPath });
 
 const camels = nConf.get('camels').slice(0);
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function sleep() {
+  return new Promise((resolve) => setTimeout(resolve, 3000));
 }
 
 async function feedCamel() {
@@ -27,14 +27,16 @@ async function feedCamel() {
 
   try {
     communication.setCamel(camelInstance);
+    await communication.getSession();
+    await sleep();
     await communication.auth();
-    await sleep(5000);
+    await sleep();
     await communication.feed();
-    await sleep(5000);
+    await sleep();
     await communication.teach();
-    await sleep(5000);
+    await sleep();
     await communication.lotto();
-    await sleep(5000);
+    await sleep();
   } catch (error) {
     console.error('Error while feeding camel:', error || 'Unknown error');
   }

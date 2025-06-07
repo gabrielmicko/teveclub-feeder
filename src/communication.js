@@ -1,4 +1,3 @@
-import request from 'request';
 import fs from 'fs';
 import nConf from 'nconf';
 import jsdom from 'jsdom';
@@ -25,243 +24,243 @@ class Communication {
   constructor() {
     this.drink = 0;
     this.food = 0;
-    this.jar = request.jar();
+    this.cookie = null;
   }
 
   setCamel(Camel) {
     this.camel = Camel;
   }
 
-  auth() {
-    let options = {
-      ...{
-        url: 'https://teveclub.hu/index.pet',
-        timeout: 5000,
-        jar: this.jar,
-        form: RequestBuilder.buildAuthData(this.camel),
-      },
-      ...RequestBuilder.getBaseRequest(),
-    };
-
-    return new Promise(
-      function (resolve, reject) {
-        request.post(options, (err, httpResponse, body) => {
-          try {
-            if (err) {
-              console.log('Auth() request error.');
-              reject('Auth() request error.');
-            }
-
-            if (nConf.get('debug')) {
-              let filePath = path.join(__dirname, '../debug/auth.html');
-              fs.writeFileSync(filePath, body);
-            }
-
-            if (
-              httpResponse.statusCode == 200 &&
-              httpResponse.request.uri.pathname == '/myteve.pet'
-            ) {
-              let document = jsdom.jsdom(body);
-              let foodSelector = document.querySelector('select[name="kaja"]');
-              let drinkSelector = document.querySelector('select[name="pia"]');
-
-              this.food =
-                foodSelector !== null ? foodSelector.children.length : 0;
-              this.drink =
-                drinkSelector !== null ? drinkSelector.children.length : 0;
-
-              if (nConf.get('debug')) {
-                console.log(
-                  'Successfully logged in with the camel: ' +
-                    this.camel.username
-                );
-              }
-              resolve();
-            } else {
-              if (nConf.get('debug')) {
-                console.log(
-                  'Failed to log in with the camel: ' + this.camel.username
-                );
-              }
-              reject();
-            }
-          } catch (error) {
-            console.log('Error in auth: ', error);
+  getSession() {
+    return new Promise((resolve, reject) => {
+      const url = 'https://teveclub.hu/index.pet';
+      fetch(url, {
+        method: 'GET',
+        headers: RequestBuilder.getHeaders(),
+        redirect: 'follow',
+      })
+        .then((response) => {
+          this.cookie = response.headers.get('set-cookie');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
           }
+          console.log('Successfully obtained a session id.');
+          resolve();
+          return;
+        })
+        .catch((error) => {
+          console.log('Error in getSession()', error);
+          reject();
+          return;
         });
-      }.bind(this)
-    );
+    });
+  }
+
+  auth() {
+    return new Promise((resolve, reject) => {
+      fetch('https://teveclub.hu/index.pet', {
+        method: 'POST',
+        body: RequestBuilder.buildAuthData(this.camel),
+        headers: { ...RequestBuilder.getHeaders(), Cookie: this.cookie },
+        redirect: 'follow',
+      })
+        .then((response) => {
+          //this.cookie = response.headers.get('set-cookie');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
+          }
+          return response.text().then((body) => ({ response, body }));
+        })
+        .then(({ response, body }) => {
+          const finalPath = new URL(response.url).pathname;
+
+          if (nConf.get('debug')) {
+            let filePath = path.join(__dirname, '../debug/auth.html');
+            fs.writeFileSync(filePath, body);
+          }
+
+          if (finalPath !== '/myteve.pet') {
+            if (nConf.get('debug')) {
+              console.log(
+                'Failed to log in with the camel: ' + this.camel.username
+              );
+            }
+            throw new Error(`Unexpected redirect to ${finalPath}`);
+          }
+
+          let document = jsdom.jsdom(body);
+          let foodSelector = document.querySelector('select[name="kaja"]');
+          let drinkSelector = document.querySelector('select[name="pia"]');
+
+          this.food = foodSelector !== null ? foodSelector.children.length : 0;
+          this.drink =
+            drinkSelector !== null ? drinkSelector.children.length : 0;
+
+          if (nConf.get('debug')) {
+            console.log(
+              'Successfully logged in with the camel: ' + this.camel.username
+            );
+          }
+          resolve();
+        })
+        .catch((error) => {
+          console.log('Error in Auth()', error);
+          reject();
+          return;
+        });
+    });
   }
 
   feed() {
-    return new Promise(
-      function (resolve, reject) {
-        if (this.drink > 0 || this.food > 0) {
-          let options = {
-            ...{
-              url: 'https://teveclub.hu/myteve.pet',
-              timeout: 5000,
-              jar: this.jar,
-              form: RequestBuilder.buildFeedData(this.drink, this.food),
-            },
-            ...RequestBuilder.getBaseRequest(),
-          };
-
-          request(options, (err, httpResponse, body) => {
-            try {
-              if (err) {
-                console.log('Feed() request error.');
-                reject('Feed() request error.');
-              }
-
-              if (nConf.get('debug')) {
-                let filePath = path.join(__dirname, '../debug/food.html');
-                fs.writeFileSync(filePath, body);
-                console.log(
-                  'The camel got ' +
-                    this.drink +
-                    ' amount of drink & ' +
-                    this.food +
-                    ' amount of food.'
-                );
-              }
-              resolve();
-            } catch (error) {
-              console.log('Error in feed: ', error);
+    return new Promise((resolve, reject) => {
+      if (this.drink > 0 || this.food > 0) {
+        fetch('https://teveclub.hu/myteve.pet', {
+          method: 'POST',
+          body: RequestBuilder.buildFeedData(this.drink, this.food),
+          headers: { ...RequestBuilder.getHeaders(), Cookie: this.cookie },
+          redirect: 'follow',
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status} ${response.statusText}`);
             }
+            return response.text().then((body) => ({ response, body }));
+          })
+          .then(({ response, body }) => {
+            if (nConf.get('debug')) {
+              let filePath = path.join(__dirname, '../debug/food.html');
+              fs.writeFileSync(filePath, body);
+              console.log(
+                'The camel got ' +
+                  this.drink +
+                  ' amount of drink & ' +
+                  this.food +
+                  ' amount of food.'
+              );
+            }
+            resolve();
+          })
+          .catch((error) => {
+            console.log('Error in feed()', error);
+            reject();
+            return;
           });
-        } else {
-          if (nConf.get('debug')) {
-            console.log('The camel does not need any food or drink.');
-          }
-          resolve();
+      } else {
+        if (nConf.get('debug')) {
+          console.log('The camel does not need any food or drink.');
         }
-      }.bind(this)
-    );
+        resolve();
+      }
+    });
   }
 
   teach() {
     return new Promise((resolve, reject) => {
-      let options = {
-        ...{
-          url: 'https://teveclub.hu/tanit.pet',
-          timeout: 5000,
-          jar: this.jar,
-          form: RequestBuilder.buildTeachData(),
-        },
-        ...RequestBuilder.getBaseRequest(),
-      };
-
-      request(
-        options,
-        function (err, httpResponse, body) {
-          try {
-            if (err) {
-              console.log('Teach() request error.');
-              reject('Teach() request error.');
-            }
-
-            if (nConf.get('debug')) {
-              let filePath = path.join(__dirname, '../debug/teach.html');
-              fs.writeFileSync(filePath, body);
-            }
-
-            let document = jsdom.jsdom(body);
-            let teachSelector = document.querySelector(
-              'select[name="tudomany"]'
-            );
-
-            if (teachSelector !== null) {
-              let firstOption = teachSelector.children[0].value;
-              this.pickSubject(firstOption).then(resolve, reject);
-            } else {
-              if (nConf.get('debug')) {
-                console.log('Teaching the camel has been done.');
-              }
-              resolve();
-            }
-          } catch (error) {
-            console.log('Error in teach: ', error);
+      fetch('https://teveclub.hu/tanit.pet', {
+        method: 'POST',
+        body: RequestBuilder.buildTeachData(),
+        headers: { ...RequestBuilder.getHeaders(), Cookie: this.cookie },
+        redirect: 'follow',
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
           }
-        }.bind(this)
-      );
+          return response.text().then((body) => ({ response, body }));
+        })
+        .then(({ response, body }) => {
+          if (nConf.get('debug')) {
+            let filePath = path.join(__dirname, '../debug/teach.html');
+            fs.writeFileSync(filePath, body);
+          }
+
+          let document = jsdom.jsdom(body);
+          let teachSelector = document.querySelector('select[name="tudomany"]');
+
+          if (teachSelector !== null) {
+            let firstOption = teachSelector.children[0].value;
+            this.pickSubject(firstOption).then(resolve, reject);
+          } else {
+            if (nConf.get('debug')) {
+              console.log('Teaching the camel has been done.');
+            }
+            resolve();
+          }
+        })
+        .catch((error) => {
+          console.log('Error in Teach()', error);
+          reject();
+          return;
+        });
     });
   }
 
   pickSubject(subject) {
-    return new Promise(
-      function (resolve, reject) {
-        let options = {
-          ...{
-            url: 'https://teveclub.hu/tanit.pet',
-            timeout: 5000,
-            jar: this.jar,
-            form: RequestBuilder.buildPickSubjectData(subject),
-          },
-          ...RequestBuilder.getBaseRequest(),
-        };
-
-        request(options, (err, httpResponse, body) => {
-          try {
-            if (err) {
-              console.log('pickSubject() request error.');
-              reject('pickSubject() request error.');
-            }
-
-            if (nConf.get('debug')) {
-              let filePath = path.join(__dirname, '../debug/subject.html');
-              fs.writeFileSync(filePath, body);
-              console.log(
-                'New subject (' + subject + ') has been picked to learn.'
-              );
-            }
-            resolve();
-          } catch (error) {
-            console.log('Error in pickSubject: ', error);
+    return new Promise((resolve, reject) => {
+      fetch('https://teveclub.hu/tanit.pet', {
+        method: 'POST',
+        body: RequestBuilder.buildPickSubjectData(subject),
+        headers: { ...RequestBuilder.getHeaders(), Cookie: this.cookie },
+        redirect: 'follow',
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
           }
+          return response.text().then((body) => ({ response, body }));
+        })
+        .then(({ response, body }) => {
+          if (nConf.get('debug')) {
+            let filePath = path.join(__dirname, '../debug/subject.html');
+            fs.writeFileSync(filePath, body);
+            console.log(
+              'New subject (' + subject + ') has been picked to learn.'
+            );
+          }
+          resolve();
+        })
+        .catch((error) => {
+          console.log('Error in pickSubject()', error);
+          reject();
+          return;
         });
-      }.bind(this)
-    );
+    });
   }
 
   lotto() {
-    return new Promise(
-      function (resolve, reject) {
-        let number = Math.floor(
-          Math.random() * (this.camel.max - this.camel.min) + this.camel.min
-        );
+    return new Promise((resolve, reject) => {
+      let number = Math.floor(
+        Math.random() * (this.camel.max - this.camel.min) + this.camel.min
+      );
 
-        let options = {
-          ...{
-            url: 'https://teveclub.hu/egyszam.pet',
-            timeout: 5000,
-            jar: this.jar,
-            form: RequestBuilder.buildLottoData(number),
-          },
-          ...RequestBuilder.getBaseRequest(),
-        };
-
-        request(options, (err, httpResponse, body) => {
-          try {
-            if (err) {
-              console.log('lotto() request error.');
-              reject('lotto() request error.');
-            }
-
-            if (nConf.get('debug')) {
-              let filePath = path.join(__dirname, '../debug/lotto.html');
-              fs.writeFileSync(filePath, body);
-              console.log(
-                'Random number generated (' + number + ') for the lotto.'
-              );
-            }
-            resolve();
-          } catch (error) {
-            console.log('Error in lotto: ', error);
+      fetch('https://teveclub.hu/egyszam.pet', {
+        method: 'POST',
+        body: RequestBuilder.buildLottoData(number),
+        headers: { ...RequestBuilder.getHeaders(), Cookie: this.cookie },
+        redirect: 'follow',
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
           }
+          return response.text().then((body) => ({ response, body }));
+        })
+        .then(({ response, body }) => {
+          if (nConf.get('debug')) {
+            let filePath = path.join(__dirname, '../debug/lotto.html');
+            fs.writeFileSync(filePath, body);
+            console.log(
+              'Random number generated (' + number + ') for the lotto.'
+            );
+          }
+          resolve();
+        })
+        .catch((error) => {
+          console.log('Error in pickSubject()', error);
+          reject();
+          return;
         });
-      }.bind(this)
-    );
+    });
   }
 }
 
