@@ -32,6 +32,7 @@ async function feedCamel() {
     await sleep();
     console.log('Before auth');
     await communication.auth();
+    console.log('Before sleep, after auth');
     await sleep();
     console.log('Before feed');
     await communication.feed();
