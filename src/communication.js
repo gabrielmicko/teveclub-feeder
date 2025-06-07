@@ -101,6 +101,7 @@ class Communication {
               'Successfully logged in with the camel: ' + this.camel.username
             );
           }
+          console.log('resolve', resolve);
           resolve();
         })
         .catch((error) => {
