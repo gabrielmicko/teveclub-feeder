@@ -8,6 +8,10 @@ nConf.argv().env().file({ file: configPath });
 
 const camels = nConf.get('camels').slice(0);
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function feedCamel() {
   if (camels.length === 0) {
     process.exit();
@@ -20,9 +24,13 @@ async function feedCamel() {
   try {
     communication.setCamel(camelInstance);
     await communication.auth();
+    await sleep(5000);
     await communication.feed();
+    await sleep(5000);
     await communication.teach();
+    await sleep(5000);
     await communication.lotto();
+    await sleep(5000);
   } catch (error) {
     console.error('Error while feeding camel:', error || 'Unknown error');
   }
