@@ -13,7 +13,7 @@ nConf.argv().env().file({ file: configPath });
 const camels = nConf.get('camels').slice(0);
 
 function sleep() {
-  return new Promise((resolve) => setTimeout(resolve, 3000));
+  return new Promise((resolve) => setTimeout(resolve, 5000));
 }
 
 async function feedAllCamels() {
