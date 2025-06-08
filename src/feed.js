@@ -20,19 +20,19 @@ async function processCamel(camel) {
   try {
     communication.setCamel(camelInstance);
     console.log(`[${camel.username}] Before getSession`);
-    await communication.getSession();
+    // await communication.getSession();
     await sleep();
     console.log(`[${camel.username}] Before auth`);
-    await communication.auth();
+    // await communication.auth();
     await sleep();
     console.log(`[${camel.username}] Before feed`);
-    await communication.feed();
+    //await communication.feed();
     await sleep();
     console.log(`[${camel.username}] Before teach`);
-    await communication.teach();
+    //await communication.teach();
     await sleep();
     console.log(`[${camel.username}] Before lotto`);
-    await communication.lotto();
+    //await communication.lotto();
     await sleep();
   } catch (error) {
     console.error(
