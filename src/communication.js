@@ -103,6 +103,7 @@ class Communication {
           }
           console.log('resolve', resolve);
           resolve();
+          return;
         })
         .catch((error) => {
           console.log('Error in Auth()', error);
@@ -140,6 +141,7 @@ class Communication {
               );
             }
             resolve();
+            return;
           })
           .catch((error) => {
             console.log('Error in feed()', error);
@@ -151,6 +153,7 @@ class Communication {
           console.log('The camel does not need any food or drink.');
         }
         resolve();
+        return;
       }
     });
   }
@@ -181,11 +184,13 @@ class Communication {
           if (teachSelector !== null) {
             let firstOption = teachSelector.children[0].value;
             this.pickSubject(firstOption).then(resolve, reject);
+            return;
           } else {
             if (nConf.get('debug')) {
               console.log('Teaching the camel has been done.');
             }
             resolve();
+            return;
           }
         })
         .catch((error) => {
@@ -219,6 +224,7 @@ class Communication {
             );
           }
           resolve();
+          return;
         })
         .catch((error) => {
           console.log('Error in pickSubject()', error);
@@ -255,6 +261,7 @@ class Communication {
             );
           }
           resolve();
+          return;
         })
         .catch((error) => {
           console.log('Error in pickSubject()', error);
