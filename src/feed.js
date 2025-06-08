@@ -11,37 +11,41 @@ let configPath = path.join(__dirname, '../config.json');
 nConf.argv().env().file({ file: configPath });
 
 const camels = nConf.get('camels').slice(0);
+const sleep = (ms = 3000) => new Promise((res) => setTimeout(res, ms));
 
-function sleep() {
-  return new Promise((resolve) => setTimeout(resolve, 5000));
+async function processCamel(camel) {
+  const camelInstance = new Camel(camel);
+  const communication = new Communication();
+
+  try {
+    communication.setCamel(camelInstance);
+    console.log(`[${camel.username}] Before getSession`);
+    await communication.getSession();
+    await sleep();
+    console.log(`[${camel.username}] Before auth`);
+    await communication.auth();
+    await sleep();
+    console.log(`[${camel.username}] Before feed`);
+    await communication.feed();
+    await sleep();
+    console.log(`[${camel.username}] Before teach`);
+    await communication.teach();
+    await sleep();
+    console.log(`[${camel.username}] Before lotto`);
+    await communication.lotto();
+    await sleep();
+  } catch (error) {
+    console.error(
+      `Error with camel ${camel.username}:`,
+      error || 'Unknown error'
+    );
+  }
 }
 
 async function feedAllCamels() {
-  while (camels.length > 0) {
-    const camel = camels.pop();
-    const camelInstance = new Camel(camel);
-    const communication = new Communication();
-
-    try {
-      communication.setCamel(camelInstance);
-      console.log('Before getSession');
-      await communication.getSession();
-      await sleep();
-      console.log('Before auth');
-      await communication.auth();
-      await sleep();
-      console.log('Before feed');
-      await communication.feed();
-      await sleep();
-      console.log('Before teach');
-      await communication.teach();
-      await sleep();
-      console.log('Before lotto');
-      await communication.lotto();
-      await sleep();
-    } catch (error) {
-      console.error('Error while feeding camel:', error || 'Unknown error');
-    }
+  for (const camel of camels) {
+    await processCamel(camel);
+    await new Promise((res) => setTimeout(res, 100)); // slight pause to yield CPU
   }
 
   process.exit();
