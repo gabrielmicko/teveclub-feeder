@@ -73,8 +73,7 @@ class Communication {
         })
         .then(({ response, body }) => {
           const finalPath = new URL(response.url).pathname;
-          resolve();
-          return;
+
           if (nConf.get('debug')) {
             let filePath = path.join(__dirname, '../debug/auth.html');
             fs.writeFileSync(filePath, body);
